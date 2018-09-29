@@ -8,6 +8,8 @@
 #include <dirent.h>
 //#include <pthread.h>
 
+//testeeeeee do patrick
+
 int main(){
 
 	struct sockaddr_in socketAddr;
