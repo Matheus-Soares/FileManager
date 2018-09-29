@@ -6,33 +6,34 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <dirent.h>
+//#include <pthread.h>
 
 int main(){
 
-	struct sockaddr_in socketAddr; 
+	struct sockaddr_in socketAddr;
 
-	socketAddr.sin_family = AF_INET;						// Familia do endere√ßo
+	socketAddr.sin_family = AF_INET;						// Familia do endereÁo
 	socketAddr.sin_port = htons(7000);						// Porta escolhida (htons converte o valor na ordem de bytes da rede)
-	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// Endere√ßo IP (inet_addr converte o endere√ßo para binario em bytes)
-	bzero(&(socketAddr.sin_zero), 8);						// Estrutura com zeros sem utilidade (Para prop√≥sitos futuros)?
+	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// EndereÁo IP, localhost (inet_addr converte o endereÁo para binario em bytes)
+	bzero(&(socketAddr.sin_zero), 8);						// Estrutura com zeros sem utilidade (Para propÛsitos futuros)?
 
-	int socketR = socket(AF_INET, SOCK_STREAM, 0);  	// Initializa o socket. 	(Dom√≠nio da comunica√ß√£o (AF_NET p/ TCP/IP),
-														// 							Tipo de comunica√ß√£o (TCP/UDP) (SOCK_STREAM p/ TCP)
+	int socketR = socket(AF_INET, SOCK_STREAM, 0);  	// Inicializa o socket. 	(DomÌnio da comunicaÁ„o (AF_NET p/ TCP/IP),
+														// 							Tipo de comunicaÁ„o (TCP/UDP) (SOCK_STREAM p/ TCP)
 														//							Protocolo (0))
-		
-	if(socketR == -1){	// A fun√ß√£o socket() retorna -1 se ocorrer algum erro
+
+	if(socketR == -1){	// A funÁ„o socket() retorna -1 se ocorrer algum erro
 		printf ("Error creating the socket");
 		return -1;
 	}
 
-	int bindR = bind(socketR, (struct sockaddr *)&socketAddr, sizeof(socketAddr));	// Associa o socket criado com a porta do SO	
-	
-	if(bindR == -1){	// A fun√ß√£o bind() retorna -1 se ocorrer algum erro e 0 caso contr√°rio
+	int bindR = bind(socketR, (struct sockaddr *)&socketAddr, sizeof(socketAddr));	// Associa o socket criado com a porta do SO
+
+	if(bindR == -1){	// A funÁ„o bind() retorna -1 se ocorrer algum erro e 0 caso contr·rio
 		printf("Error in function bind\n");
 		return -1;
 	}
 
-	int listenR = listen(socketR, 10); 		// Habilita o socket pra receber as conex√µes atrav√©s do descritor (socketR) do socket
+	int listenR = listen(socketR, 10); 		// Habilita o socket pra receber as conexıes atravÈs do descritor (socketR) do socket
 
 	if(listenR == -1){
 		printf("Error in function listen\n");
@@ -40,9 +41,9 @@ int main(){
 	}
 
 	while(1){
-		
-		int acceptR= accept(socketR, (struct sockaddr*)NULL, NULL); 	// Aceita conex√µes
-		
+
+		int acceptR = accept(socketR, (struct sockaddr*)NULL, NULL); 	// Aceita conexıes
+
 		if(acceptR == -1){
 			printf("Error in function accept\n");
 			return -1;
