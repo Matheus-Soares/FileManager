@@ -1,3 +1,28 @@
+/*
+O sistema deve permitir que arquivos locais sejam acessados por usuários remotos simultaneamente.
+As operações permitidas pelo sistema devem incluir:
+criar (sub)diretório
+remover (sub)diretório
+entrar em (sub)diretório
+mostrar conteúdo do diretório
+criar arquivo
+remover arquivo
+escrever um sequência de caracteres em um arquivo
+mostrar conteúdo do arquivo
+
+Etapa 1:
+Desenvolver a estrutura de acesso do servidor de arquivos.
+Ele deverá será acessado via socket TCP. Cada conexão deverá ser gerida por uma thread.
+Condições de corrida deverão ser tratadas por meio de semáforos ou mutexes.
+Nesta etapa você não precisa implementar as operações sobre arquivos listadas acima.
+Ao invés disso, use as operações diretamente do sistema de arquivos do seu sistema operacional.
+Recomenda-se que o servidor imprima mensagens na tela para demonstrar o funcionamento ao professor.
+
+Observações:
+Não é necessário autenticação dos usuários.
+Não é necessário criar um aplicativo cliente. Você pode usar o aplicativo netcat disponível para Linux e Windows.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -6,17 +31,20 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <dirent.h>
-//#include <pthread.h>
+#include <pthread.h>
 
-//testeeeeee do patrick
+//Criar variável do mutex. Deve ser global.
+pthread_mutex_t cadeado;
 
-int main(){
 
-	struct sockaddr_in socketAddr;
+//Definição das funções
+int create_socket(){
+    struct sockaddr_in socketAddr;
 
-	socketAddr.sin_family = AF_INET;						// Familia do endereço
+    //Configuração do socket
+	socketAddr.sin_family = AF_INET;						// Familía do endereço
 	socketAddr.sin_port = htons(7000);						// Porta escolhida (htons converte o valor na ordem de bytes da rede)
-	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// Endereço IP, localhost (inet_addr converte o endereço para binario em bytes)
+	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// Endereço IP, localhost (inet_addr converte o endereço para binário em bytes)
 	bzero(&(socketAddr.sin_zero), 8);						// Estrutura com zeros sem utilidade (Para propósitos futuros)?
 
 	int socketR = socket(AF_INET, SOCK_STREAM, 0);  	// Inicializa o socket. 	(Domínio da comunicação (AF_NET p/ TCP/IP),
@@ -42,6 +70,59 @@ int main(){
 		return -1;
 	}
 
+	return socketR;
+}
+
+void* menu(void* acceptR_){
+    /*
+    criar (sub)diretório
+    remover (sub)diretório
+    entrar em (sub)diretório
+    mostrar conteúdo do diretório
+    criar arquivo
+    remover arquivo
+    escrever um sequência de caracteres em um arquivo
+    mostrar conteúdo do arquivo
+    */
+
+    int option = 1;
+    int* acceptR = (int*)acceptR_;
+    char buffer[1000];
+
+    memset(buffer, 0, sizeof(buffer));
+
+    strcpy(buffer, "Menu:\n\n1. Criar pasta\n2. Remover pasta\n3. Entrar em pasta\n4. Listar conteudo\n5. Criar arquivo\n6. Remover arquivo\n7. Escrever em um arquivo\n8. Mostrar conteudo do arquivo\n\n");
+
+    while(option >= 1 && option <= 8){
+
+        //printf("Menu:\n\n1. Criar pasta\n2. Remover pasta\n3. Entrar em pasta\n4. Listar conteudo\n5. Criar arquivo\n6. Remover arquivo\n7. Escrever em um arquivo\n8. Mostrar conteudo do arquivo\n\n");
+        int sendR = send(*acceptR, buffer, strlen(buffer), 0);
+
+        printf("Digite sua opcao: ");
+        //scanf("%d", &option);
+        recv(, );
+        printf("\n\n");
+
+        switch(option){
+            case 1:
+                break;
+
+            case 2:
+                break;
+
+            default:
+                printf("Opcao invalida. Saindo...\n\n");
+                break;
+        }
+    }
+}
+
+
+
+int main(){
+
+    int socketR = create_socket();
+
 	while(1){
 
 		int acceptR = accept(socketR, (struct sockaddr*)NULL, NULL); 	// Aceita conexões
@@ -50,6 +131,14 @@ int main(){
 			printf("Error in function accept\n");
 			return -1;
 		}
+
+		//Inicia o mutex
+        pthread_mutex_init(&cadeado, NULL);
+
+        pthread_t tid;
+
+        printf("\nCriando thread.\n");
+        pthread_create(&tid, NULL, menu, &acceptR);
 
 		printf("Socket criado: %d\n", acceptR);
 	}
