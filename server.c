@@ -32,6 +32,7 @@ Não é necessário criar um aplicativo cliente. Você pode usar o aplicativo netcat
 #include <string.h>
 #include <dirent.h>
 #include <pthread.h>
+#include <sys/stat.h>
 
 //Criar variável do mutex. Deve ser global.
 pthread_mutex_t cadeado;
@@ -87,33 +88,60 @@ void* menu(void* acceptR_){
 
     int option = 1;
     int* acceptR = (int*)acceptR_;
-    char buffer[1000];
+    char buffer[1000], recvBuffer[1000];
+    int status;
 
     memset(buffer, 0, sizeof(buffer));
 
-    strcpy(buffer, "Menu:\n\n1. Criar pasta\n2. Remover pasta\n3. Entrar em pasta\n4. Listar conteudo\n5. Criar arquivo\n6. Remover arquivo\n7. Escrever em um arquivo\n8. Mostrar conteudo do arquivo\n\n");
+    strcpy(buffer, "Conexao realizada com sucesso!\n\n");
 
-    while(option >= 1 && option <= 8){
+    send(*acceptR, buffer, strlen(buffer), 0);
 
-        //printf("Menu:\n\n1. Criar pasta\n2. Remover pasta\n3. Entrar em pasta\n4. Listar conteudo\n5. Criar arquivo\n6. Remover arquivo\n7. Escrever em um arquivo\n8. Mostrar conteudo do arquivo\n\n");
-        int sendR = send(*acceptR, buffer, strlen(buffer), 0);
 
-        printf("Digite sua opcao: ");
-        //scanf("%d", &option);
-        recv(, );
-        printf("\n\n");
+    while (strcmp(buffer, "exit\n") != 0){
 
-        switch(option){
-            case 1:
-                break;
+        int recvR = recv(*acceptR, recvBuffer, 100, 0);  //Retorna o tamanho da String que o cliente escreveu
+        recvBuffer[recvR] = '\0';                        //Adiciona um \0 ao final da string para indicar seu termino
 
-            case 2:
-                break;
+        /*
+        if (strncmp(recvBuffer, "mkdir ", 6) == 0){
 
-            default:
-                printf("Opcao invalida. Saindo...\n\n");
-                break;
+            recvBuffer[recvR] = '\0';
+
+            memmove(recvBuffer, recvBuffer+6, strlen(recvBuffer)); //Copia pro recvBuffer, iniciando no indice recvBuffer+6, indo até o final do recvBuffer.
+            printf("Palavra final %s\n", recvBuffer);
+
+            status = mkdir(recvBuffer, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+            if(status == 0){
+                printf("Pasta criada com sucesso!\n");
+            }
         }
+        */
+
+        if (strncmp(recvBuffer, "mkdir ", 6) == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "rm -r ", 6) == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "cd ", 3) == 0)
+            system(recvBuffer);
+
+        if (strcmp(recvBuffer, "ls\n") == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "touch ", 6) == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "rm ", 3) == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "echo ", 5) == 0)
+            system(recvBuffer);
+
+        if (strncmp(recvBuffer, "cat ", 4) == 0)
+            system(recvBuffer);
     }
 }
 
