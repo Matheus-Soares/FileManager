@@ -37,134 +37,9 @@ Não e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat
 //Criar variavel do mutex. Deve ser global.
 pthread_mutex_t cadeado;
 
-
 //Definição das funcoes
-int create_socket(){
-    struct sockaddr_in socketAddr;
-
-    //Configuracao do socket
-	socketAddr.sin_family = AF_INET;						// Familia do endereço
-	socketAddr.sin_port = htons(7000);						// Porta escolhida (htons converte o valor na ordem de bytes da rede)
-	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// Endereço IP, localhost (inet_addr converte o endereço para binario em bytes)
-	bzero(&(socketAddr.sin_zero), 8);						// Estrutura com zeros sem utilidade (Para propositos futuros)?
-
-	int socketR = socket(AF_INET, SOCK_STREAM, 0);  	// Inicializa o socket. 	(Dominio da comunicacao (AF_NET p/ TCP/IP),
-														// 							Tipo de comunicacao (TCP/UDP) (SOCK_STREAM p/ TCP)
-														//							Protocolo (0))
-
-	if(socketR == -1){	// A funcao socket() retorna -1 se ocorrer algum erro
-		printf ("Error creating the socket");
-		return -1;
-	}
-
-	int bindR = bind(socketR, (struct sockaddr *)&socketAddr, sizeof(socketAddr));	// Associa o socket criado com a porta do SO
-
-	if(bindR == -1){	// A funcao bind() retorna -1 se ocorrer algum erro e 0 caso contrario
-		printf("Error in function bind\n");
-		return -1;
-	}
-
-	int listenR = listen(socketR, 10); 		// Habilita o socket pra receber as conexoes através do descritor (socketR) do socket
-
-	if(listenR == -1){
-		printf("Error in function listen\n");
-		return -1;
-	}
-
-	return socketR;
-}
-
-void* menu(void* acceptR_){
-    int option = 1;
-    int* acceptR = (int*)acceptR_;
-    char buffer[1000], recvBuffer[1000];
-    int status;
-
-    memset(buffer, 0, sizeof(buffer));
-
-    strcpy(buffer, "Conexao realizada com sucesso!\n\n");
-
-    send(*acceptR, buffer, strlen(buffer), 0);
-
-
-    while (strcmp(buffer, "exit\n") != 0){
-
-        int recvR = recv(*acceptR, recvBuffer, 100, 0);  //Retorna o tamanho da String que o cliente escreveu
-        recvBuffer[recvR] = '\0';                        //Adiciona um \0 ao final da string para indicar seu termino
-
-
-        /* Primeiro mkdir feito:
-
-        if (strncmp(recvBuffer, "mkdir ", 6) == 0){
-
-            recvBuffer[recvR] = '\0';
-
-            memmove(recvBuffer, recvBuffer+6, strlen(recvBuffer)); //Copia pro recvBuffer, iniciando no indice recvBuffer+6, indo ate o final do recvBuffer.
-            printf("Palavra final %s\n", recvBuffer);
-
-            status = mkdir(recvBuffer, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-            if(status == 0){
-                printf("Pasta criada com sucesso!\n");
-            }
-        }
-        */
-
-
-        if (strncmp(recvBuffer, "mkdir ", 6) == 0){      //criar (sub)diretorio
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strncmp(recvBuffer, "rm -r ", 6) == 0){      //remover (sub)diretorio
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strncmp(recvBuffer, "cd ", 3) == 0){         //entrar em (sub)diretorio
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strcmp(recvBuffer, "ls\n") == 0){            //mostrar conteudo do diretorio
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-
-            system("ls > a.txt");
-            //system("ls > a.txt");
-            pthread_mutex_unlock(&cadeado);
-
-            //send(*acceptR, , strlen(RESULTADO DO LS), 0);
-        }
-
-        if (strncmp(recvBuffer, "touch ", 6) == 0){      //criar arquivo
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strncmp(recvBuffer, "rm ", 3) == 0){         //remover arquivo
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strncmp(recvBuffer, "echo ", 5) == 0){       //escrever um sequencia de caracteres em um arquivo
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-
-        if (strncmp(recvBuffer, "cat ", 4) == 0){        //mostrar conteudo do arquivo
-            pthread_mutex_lock(&cadeado);
-            system(recvBuffer);
-            pthread_mutex_unlock(&cadeado);
-        }
-    }
-}
+int create_socket();
+void* menu(void* acceptR_);
 
 
 int main(){
@@ -172,8 +47,8 @@ int main(){
     int socketR = create_socket();
 
 	while(1){
-
-		int acceptR = accept(socketR, (struct sockaddr*)NULL, NULL); 	// Aceita conexoes
+        // Aceita conexoes
+		int acceptR = accept(socketR, (struct sockaddr*)NULL, NULL);
 
 		if(acceptR == -1){
 			printf("Error in function accept\n");
@@ -181,17 +56,129 @@ int main(){
 		}
 
 		//Inicia o mutex
-        pthread_mutex_init(&cadeado, NULL);
+        //pthread_mutex_init(&cadeado, NULL);
 
         pthread_t tid;
 
         printf("\nCriando thread.\n");
         pthread_create(&tid, NULL, menu, &acceptR);
-
-		printf("Socket criado: %d\n", acceptR);
 	}
 
-    //pthread_mutex_destroy(&cadeado); ????????????
-
 	return 0;
+}
+
+
+
+int create_socket(){
+    struct sockaddr_in socketAddr;
+
+    //Configuracao do socket
+	socketAddr.sin_family = AF_INET;						// Familia do endereço
+	socketAddr.sin_port = htons(7000);						// Porta escolhida (htons converte o valor na ordem de bytes da rede)
+	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	// Endereço IP, localhost (inet_addr converte o endereço para binario em bytes)
+	bzero(&(socketAddr.sin_zero), 8);						// Prevencao de bug para arquiteturas diferentes
+
+
+	/* Inicializa o socket:
+    Dominio da comunicacao (AF_NET p/ TCP/IP),
+    Tipo de comunicacao (TCP/UDP) (SOCK_STREAM p/ TCP)
+    Protocolo (0) */
+	int socketR = socket(AF_INET, SOCK_STREAM, 0);
+	if(socketR == -1){
+		printf ("Erro ao criar o socket.\n");
+		exit(0);
+	}
+
+	//Associa o socket criado com a porta do SO
+	int bindR = bind(socketR, (struct sockaddr *)&socketAddr, sizeof(socketAddr));
+	if(bindR == -1){
+		printf("Erro na funcao bind.\n");
+		exit(0);
+	}
+
+    //Habilita o socket pra receber as conexoes atraves do descritor (socketR) do socket
+	int listenR = listen(socketR, 10);
+	if(listenR == -1){
+		printf("Erro na funcao listen.\n");
+		exit(0);
+	}
+
+	return socketR;
+}
+
+
+void* menu(void* acceptR_){
+    int* conexao = (int*)acceptR_;
+    char sendBuffer[1024], recvBuffer[1024];
+
+    memset(sendBuffer, 0, sizeof(sendBuffer));
+
+    strcpy(sendBuffer, "Conexao realizada com sucesso!\n\n");
+    send(*conexao, sendBuffer, strlen(sendBuffer), 0);
+
+    while (strcmp(recvBuffer, "exit\n") != 0){
+
+        //Retorna o tamanho da String que o cliente escreveu
+        int recvR = recv(*conexao, recvBuffer, 100, 0);
+
+        //Adiciona um \0 ao final da string para indicar seu termino
+        recvBuffer[recvR] = '\0';
+
+        //criar (sub)diretorio
+        if (strncmp(recvBuffer, "mkdir ", 6) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //remover (sub)diretorio
+        if (strncmp(recvBuffer, "rm -r ", 6) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //entrar em (sub)diretorio
+        if (strncmp(recvBuffer, "cd ", 3) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //mostrar conteudo do diretorio
+        if (strcmp(recvBuffer, "ls\n") == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+            //system("ls > a.txt");
+        }
+
+        //criar arquivo
+        if (strncmp(recvBuffer, "touch ", 6) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //remover arquivo
+        if (strncmp(recvBuffer, "rm ", 3) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //escrever um sequencia de caracteres em um arquivo
+        if (strncmp(recvBuffer, "echo ", 5) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+
+        //mostrar conteudo do arquivo
+        if (strncmp(recvBuffer, "cat ", 4) == 0){
+            pthread_mutex_lock(&cadeado);
+            system(recvBuffer);
+            pthread_mutex_unlock(&cadeado);
+        }
+    }
 }
