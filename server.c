@@ -1,26 +1,47 @@
 /*
-O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.
-As operacoes permitidas pelo sistema devem incluir:
-criar (sub)diretorio
-remover (sub)diretorio
-entrar em (sub)diretorio
-mostrar conteudo do diretorio
-criar arquivo
-remover arquivo
-escrever um sequencia de caracteres em um arquivo
-mostrar conteudo do arquivo
 
-Etapa 1:
-Desenvolver a estrutura de acesso do servidor de arquivos.
-Ele devera sera acessado via socket TCP. Cada conexao devera ser gerida por uma thread.
-Condicoes de corrida deverao ser tratadas por meio de semaforos ou mutexes.
-Nesta etapa voce nao precisa implementar as operacoes sobre arquivos listadas acima.
-Ao inves disso, use as operacoes diretamente do sistema de arquivos do seu sistema operacional.
-Recomenda-se que o servidor imprima mensagens na tela para demonstrar o funcionamento ao professor.
+Universidade Federal de Santa Catarina - UFSC
+Centro de Ciências, Tecnologias e Saúde
+Departamento de Computação
+Curso de Engenharia da Computação
 
-Observações:
-Não e necessario autenticacao dos usuarios.
-Não e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
+Alunos: Matheus André Soares - 15103102 
+        Patrick Davila Kochan - 15102827
+
+Enunciado do Trabalho:
+    O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.
+    As operacoes permitidas pelo sistema devem incluir:
+    criar (sub)diretorio
+    remover (sub)diretorio
+    entrar em (sub)diretorio
+    mostrar conteudo do diretorio
+    criar arquivo
+    remover arquivo
+    escrever um sequencia de caracteres em um arquivo
+    mostrar conteudo do arquivo
+
+    Etapa 1:
+        Desenvolver a estrutura de acesso do servidor de arquivos.
+        Ele devera sera acessado via socket TCP. Cada conexao devera ser gerida por uma thread.
+        Condicoes de corrida deverao ser tratadas por meio de semaforos ou mutexes.
+        Nesta etapa voce nao precisa implementar as operacoes sobre arquivos listadas acima.
+        Ao inves disso, use as operacoes diretamente do sistema de arquivos do seu sistema operacional.
+        Recomenda-se que o servidor imprima mensagens na tela para demonstrar o funcionamento ao professor.
+
+    Observacoes:
+        Não e necessario autenticacao dos usuarios.
+        Não e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
+     
+Anotacoes
+    - A funcao cat mostra apenas a primeira linha do arquivo (funcao fgets)
+    - Sao iniciados dois clientes. O primeiro deles inicia a insercao de um comando mkdir para criar uma pasta
+no diretorio atual do servidor (diretorio A). O outro cliente tambem inicia a insercao de um comando, um cd,
+e realiza a mudanca de diretorio confirmando a operacao (diretorio B). O servidor troca de diretorio. O primeiro 
+cliente confirma enfim a operacao mkdir. O resultado sera a criacao da pasta no diretorio B. Deveriamos adaptar o 
+mutex para resolver essa situacao.
+    - Temos um servidor aberto e dois clientes. Quantas threads e quantos processos temos?
+        - 2 threads (clientes) e 1 processo (servidor)?
+    
 */
 
 #include <stdio.h>
@@ -33,6 +54,7 @@ Não e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat
 #include <dirent.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 //Criar variavel do mutex. Deve ser global.
 pthread_mutex_t cadeado;
@@ -48,17 +70,17 @@ int main(){
 
 	while(1){
 
-        int *acceptR = calloc(sizeof(int), 1);
         // Aceita conexoes
+        int *acceptR = calloc(sizeof(int), 1);
 
         printf("\nEsperando conexao\n");		
         *acceptR = accept(socketR, (struct sockaddr*)NULL, NULL);
-        printf("Conexao criada\n");
 
-		if(*acceptR == -1){
-			printf("Error in function accept\n");
-			return -1;
-		}
+        if(*acceptR == -1){
+            printf("Error in function accept\n");
+            exit(0);
+        }
+        printf("Conexao criada\n");
 
         pthread_t tid;
         pthread_create(&tid, NULL, comando, acceptR);
@@ -66,7 +88,6 @@ int main(){
 
 	}
 
-    printf("Conexao fechada\n");
 	return 0;
 }
 
@@ -119,14 +140,14 @@ void* comando(void* acceptR_){
     strcpy(sendBuffer, "Conexao realizada com sucesso!\n");
     send(*conexao, sendBuffer, strlen(sendBuffer), 0);
 
-    while (strcmp(recvBuffer, "exit\n") != 0){
+    while (strcmp(recvBuffer, "exit") != 0){
 
         //Retorna o tamanho da String que o cliente escreveu
         memset(recvBuffer, 0, sizeof(recvBuffer));
         int recvR = recv(*conexao, recvBuffer, 100, 0);
 
         //Adiciona um \0 ao final da string para indicar seu termino
-        recvBuffer[recvR - 1] = '\0';
+        recvBuffer[recvR - 1] = '\0'; 
 
         //criar (sub)diretorio
         if (strncmp(recvBuffer, "mkdir ", 6) == 0){
@@ -139,45 +160,41 @@ void* comando(void* acceptR_){
         //remover (sub)diretorio
         if (strncmp(recvBuffer, "rm -r ", 6) == 0){
             pthread_mutex_lock(&cadeado);
-            
-            // Testando o mutex
-            //printf("Mutex bloqueado\n");
-            //sleep(5);
-
             system(recvBuffer);
             printf("Pasta excluida com sucesso\n");
             pthread_mutex_unlock(&cadeado);
-
-            //printf("Mutex desbloqueado\n");
         }
 
         //entrar em (sub)diretorio
         if (strncmp(recvBuffer, "cd ", 3) == 0){
-            
-            system(recvBuffer);
-            
+            pthread_mutex_lock(&cadeado);
+            memmove(recvBuffer, recvBuffer + 3, strlen(recvBuffer));
+            chdir(recvBuffer);
+            printf("Entrando no diretorio %s\n", recvBuffer);
+            pthread_mutex_unlock(&cadeado);
         }
 
         //mostrar conteudo do diretorio
         if (strcmp(recvBuffer, "ls") == 0){
 
-            DIR *diretorio = opendir(".");
-            struct dirent *dir;
+            DIR *diretorioAtual = opendir(".");
+            struct dirent *diretorio;
             
-            if(!diretorio){
+            if(!diretorioAtual){
                 printf("Erro ao abrir diretorio\n");
                 break;
             }
 
             memset(sendBuffer, 0, sizeof(sendBuffer));
-
-            while(dir = readdir(diretorio)){
-                strcat(sendBuffer, dir->d_name);
+             
+            /*readdir() Retorna um ponteiro do tipo dirent apontando para o 
+            proximo diretorio na lista*/
+            while(diretorio = readdir(diretorioAtual)){
+                strcat(sendBuffer, diretorio->d_name);
                 strcat(sendBuffer, "\t");
             }
             strcat(sendBuffer, "\n");
             send(*conexao, sendBuffer, strlen(sendBuffer), 0);
-
         }
 
         //criar arquivo
@@ -232,5 +249,5 @@ void* comando(void* acceptR_){
         }
 
     }
-    printf("Saindo...\n");
+    printf("Conexao fechada\n");
 }
