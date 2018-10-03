@@ -9,7 +9,7 @@ Alunos:<br>
 Matheus André Soares - 15103102<br>
 Patrick Davila Kochan - 15102827<br><br>
 
-Enunciado do Trabalho:
+Enunciado do Trabalho:<br>
     O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.<br>
     As operacoes permitidas pelo sistema devem incluir:<br>
     criar (sub)diretorio<br>
@@ -33,12 +33,12 @@ Enunciado do Trabalho:
         Nao e necessario autenticacao dos usuarios.
         Nao e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
      
-Anotacoes da equipe:
-    - A funcao cat mostra apenas a primeira linha do arquivo (funcao fgets)
+Anotacoes da equipe:<br>
+    - A funcao cat mostra apenas a primeira linha do arquivo (funcao fgets)<br>
     - Sao iniciados dois clientes. O primeiro deles inicia a insercao de um comando mkdir para criar uma pasta
 no diretorio atual do servidor (diretorio A). O outro cliente tambem inicia a insercao de um comando, um cd,
 e realiza a mudanca de diretorio confirmando a operacao (diretorio B). O servidor troca de diretorio. O primeiro 
 cliente confirma enfim a operacao mkdir. O resultado sera a criacao da pasta no diretorio B. Deveriamos adaptar o 
-mutex para resolver essa situacao.
-    - Temos um servidor aberto e dois clientes. Quantas threads e quantos processos temos?
-        - 2 threads (clientes) e 1 processo (servidor)?
+mutex para resolver essa situacao.<br>
+    - Temos um servidor aberto e dois clientes. Quantas threads e quantos processos temos?<br>
+        - 2 threads (clientes) e 1 processo (servidor)?<br><br>
