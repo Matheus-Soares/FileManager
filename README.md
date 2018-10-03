@@ -1,24 +1,24 @@
 # FileManager
 
-Universidade Federal de Santa Catarina - UFSC
-Centro de Ciências, Tecnologias e Saúde
-Departamento de Computação
-Curso de Engenharia da Computação
+Universidade Federal de Santa Catarina - UFSC<br>
+Centro de Ciências, Tecnologias e Saúde<br>
+Departamento de Computação<br>
+Curso de Engenharia da Computação<br><br>
 
 Alunos: Matheus André Soares - 15103102<br>
-        Patrick Davila Kochan - 15102827<br>
+        <pre>&#09</pr>Patrick Davila Kochan - 15102827<br>
 
 Enunciado do Trabalho:
-    O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.
-    As operacoes permitidas pelo sistema devem incluir:
-    criar (sub)diretorio
-    remover (sub)diretorio
-    entrar em (sub)diretorio
-    mostrar conteudo do diretorio
-    criar arquivo
-    remover arquivo
-    escrever um sequencia de caracteres em um arquivo
-    mostrar conteudo do arquivo
+    O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.<br>
+    As operacoes permitidas pelo sistema devem incluir:<br>
+    criar (sub)diretorio<br>
+    remover (sub)diretorio<br>
+    entrar em (sub)diretorio<br>
+    mostrar conteudo do diretorio<br>
+    criar arquivo<br>
+    remover arquivo<br>
+    escrever um sequencia de caracteres em um arquivo<br>
+    mostrar conteudo do arquivo<br>
 
     Etapa 1:
         Desenvolver a estrutura de acesso do servidor de arquivos.
@@ -29,10 +29,10 @@ Enunciado do Trabalho:
         Recomenda-se que o servidor imprima mensagens na tela para demonstrar o funcionamento ao professor.
 
     Observacoes:
-        Não e necessario autenticacao dos usuarios.
-        Não e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
+        Nao e necessario autenticacao dos usuarios.
+        Nao e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
      
-Anotacoes
+Anotacoes da equipe:
     - A funcao cat mostra apenas a primeira linha do arquivo (funcao fgets)
     - Sao iniciados dois clientes. O primeiro deles inicia a insercao de um comando mkdir para criar uma pasta
 no diretorio atual do servidor (diretorio A). O outro cliente tambem inicia a insercao de um comando, um cd,
