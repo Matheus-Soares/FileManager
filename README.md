@@ -1,4 +1,4 @@
-# FileManager
+﻿# FileManager
 
 Universidade Federal de Santa Catarina - UFSC<br>
 Centro de Ciências, Tecnologias e Saúde<br>
@@ -34,6 +34,7 @@ Enunciado do Trabalho:<br>
         Nao e necessario criar um aplicativo cliente. Voce pode usar o aplicativo netcat disponivel para Linux e Windows.
      
 Anotacoes da equipe:<br>
+    - Algumas funcionalidades do sistema foram implementadas de maneira simplicada tendo em vista que nao eram o foco do trabalho.<br>
     - A funcao cat mostra apenas a primeira linha do arquivo (funcao fgets)<br>
     - Sao iniciados dois clientes. O primeiro deles inicia a insercao de um comando mkdir para criar uma pasta
 no diretorio atual do servidor (diretorio A). O outro cliente tambem inicia a insercao de um comando, um cd,
@@ -42,3 +43,4 @@ cliente confirma enfim a operacao mkdir. O resultado sera a criacao da pasta no 
 mutex para resolver essa situacao.<br>
     - Temos um servidor aberto e dois clientes. Quantas threads e quantos processos temos?<br>
         - 2 threads (clientes) e 1 processo (servidor)?<br><br>
+    - As mensagens printadas pelas funcoes "system" nao sao precisas. Ex.: se dermos um "cd" para uma pasta inexistente, a mensagem de sucesso sera emitida, pois o processo de checagem do retorno aumentaria a complexidade da implementacao.<br><br>
