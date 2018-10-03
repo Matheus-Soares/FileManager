@@ -5,8 +5,9 @@ Centro de Ciências, Tecnologias e Saúde<br>
 Departamento de Computação<br>
 Curso de Engenharia da Computação<br><br>
 
-Alunos: Matheus André Soares - 15103102<br>
-        <pre>&#09</pr>Patrick Davila Kochan - 15102827<br>
+Alunos:<br>
+Matheus André Soares - 15103102<br>
+Patrick Davila Kochan - 15102827<br><br>
 
 Enunciado do Trabalho:
     O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.<br>
@@ -18,7 +19,7 @@ Enunciado do Trabalho:
     criar arquivo<br>
     remover arquivo<br>
     escrever um sequencia de caracteres em um arquivo<br>
-    mostrar conteudo do arquivo<br>
+    mostrar conteudo do arquivo<br><br>
 
     Etapa 1:
         Desenvolver a estrutura de acesso do servidor de arquivos.
