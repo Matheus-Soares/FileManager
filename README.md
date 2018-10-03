@@ -5,8 +5,8 @@ Centro de Ciências, Tecnologias e Saúde
 Departamento de Computação
 Curso de Engenharia da Computação
 
-Alunos: Matheus André Soares - 15103102\n
-        Patrick Davila Kochan - 15102827\n
+Alunos: Matheus André Soares - 15103102<br>
+        Patrick Davila Kochan - 15102827<br>
 
 Enunciado do Trabalho:
     O sistema deve permitir que arquivos locais sejam acessados por usuarios remotos simultaneamente.
